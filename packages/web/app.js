@@ -21,7 +21,21 @@
     return s.length <= n * 2 ? s : `${s.slice(0, n)}…${s.slice(-6)}`;
   }
 
-  function applyLang() {
+  
+  function usd() {
+    try {
+      const raw = localStorage.getItem("mrgwallet_usd_rate");
+      const rate = parseFloat(raw);
+      return isNaN(rate) || rate <= 0 ? 0.01 : rate;
+    } catch { return 0.01; }
+  }
+
+  function fmtUSD(cents) {
+    const rate = usd();
+    const total = (Number(cents || 0) / 100) * rate;
+    return total >= 0.01 ? `~$${total.toFixed(2)}` : `<$$0.01`;
+  }
+function applyLang() {
     const t = L();
     document.title = t.brand || "MRGWallet";
     document.querySelector("html").lang = lang() === "vi" ? "vi" : "en";

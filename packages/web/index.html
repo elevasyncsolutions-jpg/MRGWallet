@@ -65,6 +65,11 @@
       <p class="muted">Used in claim receipts to identify the worker. Saved to localStorage.</p>
       <hr style="border-color:var(--line);margin:0.8rem 0" />
       <label class="field">
+        <span id="price-label">MRG price <span class="muted">(USD)</span></span>
+        <input id="mrg-price" type="number" step="any" min="0" class="mono" value="0.01" />
+      </label>
+      <hr style="border-color:var(--line);margin:0.8rem 0" />
+      <label class="field">
         <span id="lang-select-label">Language</span>
         <select id="lang-select" class="mono" style="background:#0a0f1c;border:1px solid var(--line);border-radius:10px;padding:0.6rem 0.75rem;color:var(--text);font-size:0.88rem;outline:none">
           <option value="en">English</option>
