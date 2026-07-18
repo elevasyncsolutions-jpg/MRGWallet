@@ -5,6 +5,7 @@
 (function (global) {
   const SHOP_BASE = "https://mergeos.shop";
   const SCAN_BASE = "https://scan.mergeos.shop";
+  const SOLANA_EXPLORER_BASE = "https://solscan.io";
   const DEFAULT_SOLANA_PROGRAM_ID = "4gUBWum3fGKfm7BeGXryzXjPDBDLfhVJRcjN5MPnfDNW";
   const PROTOCOL_VERSION = "mrgwallet.core.v1";
   const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -77,6 +78,16 @@
   function scanTxUrl(hash) {
     const h = String(hash || "").trim();
     return h ? `${SCAN_BASE}/tx/${encodeURIComponent(h)}` : null;
+  }
+
+  function solscanUrl(address) {
+    const a = String(address || "").trim();
+    if (!a) return null;
+    if (a.length < 32 || a.length > 44) return null;
+    for (const ch of a) {
+      if (!BASE58.includes(ch)) return null;
+    }
+    return `${SOLANA_EXPLORER_BASE}/account/${a}`;
   }
 
   function getWalletConfigState(workerId = "") {
@@ -399,6 +410,7 @@
   global.MRGWallet = {
     SHOP_BASE,
     SCAN_BASE,
+    SOLANA_EXPLORER_BASE,
     DEFAULT_SOLANA_PROGRAM_ID,
     PROTOCOL_VERSION,
     sha256Hex,
@@ -406,6 +418,7 @@
     deriveAddress,
     createVault,
     mrgFromCents,
+    solscanUrl,
     scanAddressUrl,
     scanTxUrl,
     getWalletConfigState,

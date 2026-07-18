@@ -14,6 +14,8 @@ import {
   mockEconomy,
   summarizeLedgerProof,
   ledgerReferenceBytes32,
+  solscanUrl,
+  scanSolanaTxUrl,
   generateProfileId,
   createWalletProfile,
   addProfile,
@@ -95,6 +97,29 @@ test("ledgerReferenceBytes32 validates 64 hex", () => {
   const h = "ab".repeat(32);
   assert.equal(ledgerReferenceBytes32(h), h);
   assert.equal(ledgerReferenceBytes32("nope"), null);
+});
+
+test("solscanUrl returns correct URL for valid base58 address", () => {
+  const addr = "4gUBWum3fGKfm7BeGXryzXjPDBDLfhVJRcjN5MPnfDNW";
+  const url = solscanUrl(addr);
+  assert.equal(url, "https://solscan.io/account/4gUBWum3fGKfm7BeGXryzXjPDBDLfhVJRcjN5MPnfDNW");
+});
+
+test("solscanUrl returns null for empty/undefined input", () => {
+  assert.equal(solscanUrl(""), null);
+  assert.equal(solscanUrl(undefined), null);
+  assert.equal(solscanUrl(null), null);
+});
+
+test("scanSolanaTxUrl returns correct URL for valid tx signature", () => {
+  const sig = "5VERv8NMHbh7qWzZpQm8GJxqRJr3Ksc8z6sGjf9y5EeKFPVo2hVpZKMBp6YQ3xQxQxQxQxQxQxQxQxQxQxQxQxQx";
+  const url = scanSolanaTxUrl(sig);
+  assert.equal(url, "https://solscan.io/tx/5VERv8NMHbh7qWzZpQm8GJxqRJr3Ksc8z6sGjf9y5EeKFPVo2hVpZKMBp6YQ3xQxQxQxQxQxQxQxQxQxQxQxQxQx");
+});
+
+test("scanSolanaTxUrl returns null for empty input", () => {
+  assert.equal(scanSolanaTxUrl(""), null);
+  assert.equal(scanSolanaTxUrl(null), null);
 });
 
 // --- Multi-wallet profile tests ---

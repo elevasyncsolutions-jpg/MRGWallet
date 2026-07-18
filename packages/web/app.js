@@ -15,6 +15,17 @@
       .join("");
   }
 
+  function parseDeepLinkParams() {
+    const params = new URLSearchParams(window.location.search);
+    let task_id = params.get("task_id");
+    if (!task_id) {
+      const hash = window.location.hash.replace(/^#/, "");
+      const hashParams = new URLSearchParams(hash);
+      task_id = hashParams.get("task_id");
+    }
+    return { task_id: task_id || null };
+  }
+
   function short(h, n = 12) {
     if (!h) return "—";
     const s = String(h);
@@ -74,13 +85,20 @@
       [t.tip || "Tip", short(snapshot.ledger.tip_hash)],
       [t.ledger_ref || "Ledger ref", short(snapshot.ledger.ledger_reference)],
     ]);
-    kv($("solana-dl"), [
+    const solanaRows = [
       [t.program || "Program", snapshot.solana.program],
       [t.program_id || "Program id", short(snapshot.solana.program_id, 10)],
       [t.chain || "Chain", snapshot.solana.target_chain],
       [t.status || "Status", snapshot.solana.status],
       [t.release_ix || "Release ix", snapshot.solana.release_instruction],
-    ]);
+    ];
+    if (snapshot.solana_explorer_url) {
+      solanaRows.push([
+        t.explorer || "Explorer",
+        `<a href="${snapshot.solana_explorer_url}" target="_blank" rel="noopener">Solscan</a>`,
+      ]);
+    }
+    kv($("solana-dl"), solanaRows);
     const list = $("bounty-list");
     list.innerHTML = "";
     for (const b of snapshot.claimable) {
@@ -150,7 +168,7 @@
       return snap;
     } catch (err) {
       console.warn("live unavailable", err);
-      await loadMock();
+      return loadMock();
     }
   }
 
@@ -191,5 +209,36 @@
   langSelect.addEventListener("change", reloadUI);
 
   applyLang();
-  loadLive();
+
+  const deepLink = parseDeepLinkParams();
+  if (deepLink.task_id) {
+    const banner = $("deeplink-banner");
+    if (banner) {
+      banner.textContent = `Claiming bounty from deep link: ${deepLink.task_id}`;
+      banner.hidden = false;
+
+      const bountyInput = $("bounty-id-input") || document.createElement("input");
+      bountyInput.id = "bounty-id-input";
+      bountyInput.type = "hidden";
+      bountyInput.value = deepLink.task_id;
+      document.body.appendChild(bountyInput);
+
+      loadLive().then((snap) => {
+        if (snap) {
+          const bounty = snap.claimable.find((b) => b.id === deepLink.task_id);
+          const target = bounty || { id: deepLink.task_id, title: "Deep-linked bounty", reward_mrg: 0 };
+          const receipt = MRGWallet.buildWalletClaimReceipt({
+            vault: { address: snap.vault.address },
+            bounty: target,
+            proof: snap.ledger,
+            solana: snap.solana,
+            workerId: localStorage.getItem("mrgwallet_worker") || "",
+          });
+          $("receipt").textContent = JSON.stringify(receipt, null, 2);
+        }
+      });
+    }
+  } else {
+    loadLive();
+  }
 })();
