@@ -7,6 +7,7 @@ import crypto from "node:crypto";
 
 export const SHOP_BASE = "https://mergeos.shop";
 export const SCAN_BASE = "https://scan.mergeos.shop";
+export const SOLANA_EXPLORER_BASE = "https://solscan.io";
 export const DEFAULT_SOLANA_PROGRAM_ID = "4gUBWum3fGKfm7BeGXryzXjPDBDLfhVJRcjN5MPnfDNW";
 export const PROTOCOL_VERSION = "mrgwallet.core.v1";
 
@@ -76,6 +77,21 @@ export function scanAddressUrl(address) {
 export function scanTxUrl(hash) {
   const h = String(hash || "").trim();
   return h ? `${SCAN_BASE}/tx/${encodeURIComponent(h)}` : null;
+}
+
+export function solscanUrl(address) {
+  const a = String(address || "").trim();
+  if (!a) return null;
+  if (a.length < 32 || a.length > 44) return null;
+  for (const ch of a) {
+    if (!BASE58.includes(ch)) return null;
+  }
+  return `${SOLANA_EXPLORER_BASE}/account/${a}`;
+}
+
+export function scanSolanaTxUrl(txSignature) {
+  const s = String(txSignature || "").trim();
+  return s ? `${SOLANA_EXPLORER_BASE}/tx/${s}` : null;
 }
 
 export function getWalletConfigState(workerId = "") {
@@ -235,6 +251,7 @@ export function buildWalletClaimReceipt({
           ledger_reference: ledgerRef,
         }
       : null,
+    solana_explorer_url: solana?.program_id ? solscanUrl(solana.program_id) : null,
     scan_address: scanAddressUrl(v.address),
     scan_tx: tip ? scanTxUrl(tip) : null,
     notice:
@@ -274,6 +291,7 @@ export function buildWalletSnapshot({
     token,
     ledger,
     solana,
+    solana_explorer_url: solanaManifest?.program_id ? solscanUrl(solanaManifest.program_id) : null,
     config,
     claimable: bounties,
     sample_receipt: receipt,
